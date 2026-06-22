@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.history
+package com.jyotirmay.mapapplicationdemo.ui.feature.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

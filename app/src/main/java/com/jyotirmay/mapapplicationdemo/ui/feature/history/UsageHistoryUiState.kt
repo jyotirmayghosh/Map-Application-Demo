@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.history
+package com.jyotirmay.mapapplicationdemo.ui.feature.history
 
 import com.jyotirmay.mapapplicationdemo.domain.model.BookingResult
 

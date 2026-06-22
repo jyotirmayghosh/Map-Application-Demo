@@ -1,5 +1,6 @@
 package com.jyotirmay.mapapplicationdemo.ui.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,12 +15,12 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jyotirmay.mapapplicationdemo.domain.model.PointKey
-import com.jyotirmay.mapapplicationdemo.ui.booking.BookingSummaryScreen
-import com.jyotirmay.mapapplicationdemo.ui.detail.LocationDetailScreen
-import com.jyotirmay.mapapplicationdemo.ui.history.UsageHistoryScreen
-import com.jyotirmay.mapapplicationdemo.ui.history.UsageHistoryViewModel
-import com.jyotirmay.mapapplicationdemo.ui.map.MapScreen
-import com.jyotirmay.mapapplicationdemo.ui.map.MapViewModel
+import com.jyotirmay.mapapplicationdemo.ui.feature.booking.BookingSummaryScreen
+import com.jyotirmay.mapapplicationdemo.ui.feature.detail.LocationDetailScreen
+import com.jyotirmay.mapapplicationdemo.ui.feature.history.UsageHistoryScreen
+import com.jyotirmay.mapapplicationdemo.ui.feature.history.UsageHistoryViewModel
+import com.jyotirmay.mapapplicationdemo.ui.feature.map.MapScreen
+import com.jyotirmay.mapapplicationdemo.ui.feature.map.MapViewModel
 
 @Composable
 fun MapNavHost(
@@ -40,12 +41,15 @@ fun MapNavHost(
                 val viewModel: MapViewModel = hiltViewModel(parentEntry)
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-                LaunchedEffect(uiState.bookingResult?.id) {
-                    uiState.bookingResult?.let {
-                        if (navController.currentBackStackEntry?.destination?.route == NavRoutes.MAP) {
-                            navController.navigate(NavRoutes.BOOK_SUMMARY)
-                        }
+                LaunchedEffect(uiState.shouldOpenBookingSummary) {
+                    if (uiState.shouldOpenBookingSummary) {
+                        navController.navigate(NavRoutes.BOOK_SUMMARY)
+                        viewModel.onBookingSummaryOpened()
                     }
+                }
+
+                BackHandler {
+                    // Keep the user on the map; do not finish the activity.
                 }
 
                 MapScreen(
@@ -59,7 +63,6 @@ fun MapNavHost(
                     onErrorDismissed = viewModel::clearError,
                     onRecenterToCurrentLocation = viewModel::onRecenterToCurrentLocation,
                     onRecenterHandled = viewModel::onRecenterHandled,
-                    onOpenHistory = { navController.navigate(NavRoutes.USAGE_HISTORY) },
                 )
             }
 
@@ -89,21 +92,19 @@ fun MapNavHost(
             composable(NavRoutes.BOOK_SUMMARY) {
                 val parentEntry = navController.getBackStackEntry(NavRoutes.MAP_GRAPH)
                 val viewModel: MapViewModel = hiltViewModel(parentEntry)
-                val bookingResult = viewModel.getBookingResult()
-
-                if (bookingResult == null) {
-                    LaunchedEffect(Unit) {
-                        navController.popBackStack()
-                    }
-                    return@composable
-                }
+                val bookingResult = viewModel.getBookingResult() ?: return@composable
 
                 BookingSummaryScreen(
                     bookingResult = bookingResult,
-                    onContinue = { navController.navigate(NavRoutes.USAGE_HISTORY) },
-                    onBack = {
+                    onContinue = {
+                        navController.navigate(NavRoutes.USAGE_HISTORY) {
+                            popUpTo(NavRoutes.BOOK_SUMMARY) { inclusive = true }
+                        }
                         viewModel.resetBooking()
-                        navController.popBackStack(NavRoutes.MAP, inclusive = false)
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                        viewModel.resetBooking()
                     },
                 )
             }

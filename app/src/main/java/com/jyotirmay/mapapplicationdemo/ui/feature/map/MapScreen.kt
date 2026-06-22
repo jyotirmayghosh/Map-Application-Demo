@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.map
+package com.jyotirmay.mapapplicationdemo.ui.feature.map
 
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,25 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -53,13 +43,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.jyotirmay.mapapplicationdemo.domain.model.BookingStep
 import com.jyotirmay.mapapplicationdemo.domain.model.LocationPoint
 import com.jyotirmay.mapapplicationdemo.domain.model.PointKey
-import com.jyotirmay.mapapplicationdemo.ui.theme.MapApplicationDemoTheme
+import com.jyotirmay.mapapplicationdemo.ui.components.AppButton
+import com.jyotirmay.mapapplicationdemo.ui.components.TextSize
+import com.jyotirmay.mapapplicationdemo.ui.components.TextView
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 
-private val YellowButton = Color(0xFFFFD600)
 private val LabelBackground = Color(0xFFE8E8E8)
 
 @OptIn(FlowPreview::class)
@@ -73,12 +63,9 @@ fun MapScreen(
     onErrorDismissed: () -> Unit,
     onRecenterToCurrentLocation: () -> Unit,
     onRecenterHandled: () -> Unit,
-    onOpenHistory: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
     val defaultPosition = LatLng(-34.9285, 138.6007)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -132,39 +119,23 @@ fun MapScreen(
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            NavigationDrawerItem(
-                label = { Text("History") },
-                selected = false,
-                onClick = {
-                    scope.launch {
-                        drawerState.close()
-                        onOpenHistory()
-                    }
-                },
-            )
-        },
-    ) {
-        Box(modifier = modifier.fillMaxSize()) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-            )
+    Box(modifier = modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+        )
 
-            MapScreenOverlay(
-                uiState = uiState,
-                onLabelClick = onLabelClick,
-                onVButtonClick = { onVButtonClick(cameraPositionState.position.target) },
-                onRecenterToCurrentLocation = onRecenterToCurrentLocation,
-            )
+        MapScreenOverlay(
+            uiState = uiState,
+            onLabelClick = onLabelClick,
+            onVButtonClick = { onVButtonClick(cameraPositionState.position.target) },
+            onRecenterToCurrentLocation = onRecenterToCurrentLocation,
+        )
 
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -238,18 +209,18 @@ private fun AqiOverlay(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
+        TextView(
             text = "aqi",
-            style = MaterialTheme.typography.bodySmall,
+            size = TextSize.BodySmall,
             color = Color.Gray,
         )
-        Text(
+        TextView(
             text = when {
                 isLoading && aqi == null -> "..."
                 aqi != null -> aqi.toString()
                 else -> "--"
             },
-            style = MaterialTheme.typography.headlineSmall,
+            size = TextSize.HeadlineSmall,
             fontWeight = FontWeight.Bold,
         )
     }
@@ -288,26 +259,18 @@ private fun BottomPanel(
             )
         }
 
-        Button(
+        AppButton(
+            text = when (bookingStep) {
+                BookingStep.SetA -> "Set A"
+                BookingStep.SetB -> "Set B"
+                BookingStep.Book -> "Book"
+            },
             onClick = onVButtonClick,
             enabled = !isSettingPoint,
+            fillMaxWidth = false,
+            textSize = TextSize.BodySmall,
             modifier = Modifier.size(80.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YellowButton,
-                contentColor = Color.Black,
-            ),
-        ) {
-            Text(
-                text = when (bookingStep) {
-                    BookingStep.SetA -> "Set A"
-                    BookingStep.SetB -> "Set B"
-                    BookingStep.Book -> "Book"
-                },
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-            )
-        }
+        )
     }
 }
 
@@ -335,122 +298,17 @@ private fun LocationLabelRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
+        TextView(
             text = label,
+            size = TextSize.TitleMedium,
             fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.titleMedium,
         )
-        Text(
+        TextView(
             text = address ?: "",
-            style = MaterialTheme.typography.bodyMedium,
+            size = TextSize.BodyMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-    }
-}
-
-private val previewPointA = LocationPoint(
-    lat = -34.9285,
-    lng = 138.6007,
-    addressName = "Adelaide, South Australia",
-    aqi = 80,
-)
-
-private val previewPointB = LocationPoint(
-    lat = -34.9313,
-    lng = 138.5967,
-    addressName = "North Adelaide, South Australia",
-    aqi = 72,
-)
-
-@Preview(showBackground = true, name = "Set A")
-@Composable
-private fun MapScreenSetAPreview() {
-    MapApplicationDemoTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFE0E0E0)),
-        ) {
-            MapScreenOverlay(
-                uiState = MapUiState(
-                    currentAqi = 80,
-                    bookingStep = BookingStep.SetA,
-                ),
-                onLabelClick = {},
-                onVButtonClick = {},
-                onRecenterToCurrentLocation = {},
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Set B")
-@Composable
-private fun MapScreenSetBPreview() {
-    MapApplicationDemoTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFE0E0E0)),
-        ) {
-            MapScreenOverlay(
-                uiState = MapUiState(
-                    currentAqi = 80,
-                    pointA = previewPointA,
-                    bookingStep = BookingStep.SetB,
-                ),
-                onLabelClick = {},
-                onVButtonClick = {},
-                onRecenterToCurrentLocation = {},
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Book")
-@Composable
-private fun MapScreenBookPreview() {
-    MapApplicationDemoTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFE0E0E0)),
-        ) {
-            MapScreenOverlay(
-                uiState = MapUiState(
-                    currentAqi = 65,
-                    pointA = previewPointA,
-                    pointB = previewPointB,
-                    bookingStep = BookingStep.Book,
-                ),
-                onLabelClick = {},
-                onVButtonClick = {},
-                onRecenterToCurrentLocation = {},
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "AQI Loading")
-@Composable
-private fun MapScreenAqiLoadingPreview() {
-    MapApplicationDemoTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFE0E0E0)),
-        ) {
-            MapScreenOverlay(
-                uiState = MapUiState(
-                    isLoadingAqi = true,
-                    bookingStep = BookingStep.SetA,
-                ),
-                onLabelClick = {},
-                onVButtonClick = {},
-                onRecenterToCurrentLocation = {},
-            )
-        }
     }
 }

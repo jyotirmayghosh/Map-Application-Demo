@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.map
+package com.jyotirmay.mapapplicationdemo.ui.feature.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +15,7 @@ import com.jyotirmay.mapapplicationdemo.domain.usecase.UpdateLocationNicknameUse
 import com.jyotirmay.mapapplicationdemo.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,8 @@ class MapViewModel @Inject constructor(
     val uiState: StateFlow<MapUiState> = _uiState.asStateFlow()
 
     private var aqiJob: Job? = null
+    private var latestMapCenterLat: Double? = null
+    private var latestMapCenterLng: Double? = null
 
     fun onLocationPermissionGranted() {
         _uiState.update { it.copy(hasLocationPermission = true) }
@@ -70,9 +73,14 @@ class MapViewModel @Inject constructor(
                 pointB = null,
                 bookingStep = BookingStep.SetA,
                 bookingResult = null,
+                shouldOpenBookingSummary = false,
                 isBooking = false,
             )
         }
+    }
+
+    fun onBookingSummaryOpened() {
+        _uiState.update { it.copy(shouldOpenBookingSummary = false) }
     }
 
     fun clearError() {
@@ -117,9 +125,20 @@ class MapViewModel @Inject constructor(
     }
 
     private fun fetchAqiForCenter(lat: Double, lng: Double) {
+        latestMapCenterLat = lat
+        latestMapCenterLng = lng
+
         aqiJob?.cancel()
+        _uiState.update { it.copy(isLoadingAqi = false) }
+
         aqiJob = viewModelScope.launch {
-            fetchAqiUseCase(lat, lng).collect { resource ->
+            delay(AQI_FETCH_DEBOUNCE_MS)
+
+            val fetchLat = latestMapCenterLat ?: return@launch
+            val fetchLng = latestMapCenterLng ?: return@launch
+            if (fetchLat != lat || fetchLng != lng) return@launch
+
+            fetchAqiUseCase(fetchLat, fetchLng).collect { resource ->
                 when (resource) {
                     is Resource.Loading -> {
                         _uiState.update { it.copy(isLoadingAqi = true) }
@@ -140,6 +159,10 @@ class MapViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private companion object {
+        const val AQI_FETCH_DEBOUNCE_MS = 2_000L
     }
 
     private fun setBookingPoint(latLng: LatLng) {
@@ -204,6 +227,7 @@ class MapViewModel @Inject constructor(
                             it.copy(
                                 isBooking = false,
                                 bookingResult = resource.data,
+                                shouldOpenBookingSummary = true,
                             )
                         }
                     }

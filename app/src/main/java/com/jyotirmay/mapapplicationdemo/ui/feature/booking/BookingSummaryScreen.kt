@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.booking
+package com.jyotirmay.mapapplicationdemo.ui.feature.booking
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,9 +22,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jyotirmay.mapapplicationdemo.domain.model.BookedLocation
 import com.jyotirmay.mapapplicationdemo.domain.model.BookingResult
+import com.jyotirmay.mapapplicationdemo.ui.components.AppButton
+import com.jyotirmay.mapapplicationdemo.ui.components.TextSize
+import com.jyotirmay.mapapplicationdemo.ui.components.TextView
 import com.jyotirmay.mapapplicationdemo.ui.theme.MapApplicationDemoTheme
-
-private val YellowButton = Color(0xFFFFD600)
 
 @Composable
 fun BookingSummaryScreen(
@@ -70,27 +66,15 @@ fun BookingSummaryScreen(
         SummaryRow(
             label = "price",
             value = bookingResult.price.toString(),
-            labelStyle = MaterialTheme.typography.titleMedium,
-            valueStyle = MaterialTheme.typography.titleMedium,
+            labelSize = TextSize.TitleMedium,
+            valueSize = TextSize.TitleMedium,
         )
 
-        Button(
+        AppButton(
+            text = "V",
             onClick = onContinue,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YellowButton,
-                contentColor = Color.Black,
-            ),
-        ) {
-            Text(
-                text = "V",
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge,
-            )
-        }
+            modifier = Modifier.padding(top = 16.dp),
+        )
     }
 }
 
@@ -108,14 +92,14 @@ private fun LocationSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
+            TextView(
                 text = label,
-                style = MaterialTheme.typography.headlineMedium,
+                size = TextSize.HeadlineMedium,
                 fontWeight = FontWeight.Bold,
             )
-            Text(
+            TextView(
                 text = location.name,
-                style = MaterialTheme.typography.titleMedium,
+                size = TextSize.TitleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
             )
@@ -138,54 +122,23 @@ private fun SummaryRow(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    labelStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodySmall,
-    valueStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
+    labelSize: TextSize = TextSize.BodySmall,
+    valueSize: TextSize = TextSize.BodyLarge,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
+        TextView(
             text = label,
-            style = labelStyle,
+            size = labelSize,
             color = Color.Gray,
         )
-        Text(
+        TextView(
             text = value,
-            style = valueStyle,
+            size = valueSize,
             fontWeight = FontWeight.Bold,
-        )
-    }
-}
-
-private val previewBookingResult = BookingResult(
-    id = "book-preview",
-    pointA = BookedLocation(
-        latitude = 36.564,
-        longitude = 127.001,
-        aqi = 30,
-        name = "Seoul A Location",
-        nickname = "home",
-    ),
-    pointB = BookedLocation(
-        latitude = 36.567,
-        longitude = 127.0,
-        aqi = 40,
-        name = "Seoul B Location",
-        nickname = "office",
-    ),
-    price = 10000.0,
-)
-
-@Preview(showBackground = true, name = "Booking Summary")
-@Composable
-private fun BookingSummaryScreenPreview() {
-    MapApplicationDemoTheme {
-        BookingSummaryScreen(
-            bookingResult = previewBookingResult,
-            onContinue = {},
-            onBack = {},
         )
     }
 }

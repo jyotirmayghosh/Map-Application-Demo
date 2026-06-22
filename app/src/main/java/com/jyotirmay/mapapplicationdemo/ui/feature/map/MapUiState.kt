@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.map
+package com.jyotirmay.mapapplicationdemo.ui.feature.map
 
 import com.google.android.gms.maps.model.LatLng
 import com.jyotirmay.mapapplicationdemo.domain.model.BookingResult
@@ -18,5 +18,6 @@ data class MapUiState(
     val isRecentering: Boolean = false,
     val isBooking: Boolean = false,
     val bookingResult: BookingResult? = null,
+    val shouldOpenBookingSummary: Boolean = false,
     val hasLocationPermission: Boolean = false,
 )

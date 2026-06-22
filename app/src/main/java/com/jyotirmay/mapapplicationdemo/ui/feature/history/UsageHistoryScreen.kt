@@ -1,4 +1,4 @@
-package com.jyotirmay.mapapplicationdemo.ui.history
+package com.jyotirmay.mapapplicationdemo.ui.feature.history
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jyotirmay.mapapplicationdemo.domain.model.BookedLocation
 import com.jyotirmay.mapapplicationdemo.domain.model.BookingResult
+import com.jyotirmay.mapapplicationdemo.ui.components.TextSize
+import com.jyotirmay.mapapplicationdemo.ui.components.TextView
 import com.jyotirmay.mapapplicationdemo.ui.theme.MapApplicationDemoTheme
 
 @Composable
@@ -71,9 +73,9 @@ fun UsageHistoryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Text(
+                    TextView(
                         text = uiState.errorMessage,
-                        style = MaterialTheme.typography.bodyLarge,
+                        size = TextSize.BodyLarge,
                         color = MaterialTheme.colorScheme.error,
                     )
                     TextButton(onClick = onRetry) {
@@ -139,14 +141,14 @@ private fun SummaryColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
+        TextView(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            size = TextSize.BodyMedium,
             color = Color.Gray,
         )
-        Text(
+        TextView(
             text = value,
-            style = MaterialTheme.typography.headlineMedium,
+            size = TextSize.HeadlineMedium,
             fontWeight = FontWeight.Bold,
         )
     }
@@ -177,14 +179,14 @@ private fun LocationNameRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
+        TextView(
             text = label,
-            style = MaterialTheme.typography.titleMedium,
+            size = TextSize.TitleMedium,
             fontWeight = FontWeight.Bold,
         )
-        Text(
+        TextView(
             text = name,
-            style = MaterialTheme.typography.bodyLarge,
+            size = TextSize.BodyLarge,
             modifier = Modifier.weight(1f),
         )
     }
@@ -192,83 +194,3 @@ private fun LocationNameRow(
 
 private fun formatPrice(price: Double): String =
     if (price % 1.0 == 0.0) price.toLong().toString() else price.toString()
-
-private val previewItems = listOf(
-    BookingResult(
-        id = "book-1",
-        pointA = BookedLocation(
-            latitude = 36.564,
-            longitude = 127.001,
-            aqi = 30,
-            name = "Seoul A Location",
-            nickname = null,
-        ),
-        pointB = BookedLocation(
-            latitude = 36.567,
-            longitude = 127.0,
-            aqi = 40,
-            name = "Seoul B Location",
-            nickname = null,
-        ),
-        price = 10000.0,
-    ),
-    BookingResult(
-        id = "book-2",
-        pointA = BookedLocation(
-            latitude = 36.577,
-            longitude = 127.033,
-            aqi = 50,
-            name = "Seoul C Location",
-            nickname = null,
-        ),
-        pointB = BookedLocation(
-            latitude = 36.567,
-            longitude = 127.0,
-            aqi = 60,
-            name = "Seoul D Location",
-            nickname = null,
-        ),
-        price = 20000.0,
-    ),
-)
-
-@Preview(showBackground = true, name = "Usage History")
-@Composable
-private fun UsageHistoryScreenPreview() {
-    MapApplicationDemoTheme {
-        UsageHistoryScreen(
-            uiState = UsageHistoryUiState(
-                isLoading = false,
-                items = previewItems,
-                totalCount = 2,
-                totalPrice = 30000.0,
-            ),
-            onBack = {},
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Usage History Loading")
-@Composable
-private fun UsageHistoryScreenLoadingPreview() {
-    MapApplicationDemoTheme {
-        UsageHistoryScreen(
-            uiState = UsageHistoryUiState(isLoading = true),
-            onBack = {},
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "Usage History Error")
-@Composable
-private fun UsageHistoryScreenErrorPreview() {
-    MapApplicationDemoTheme {
-        UsageHistoryScreen(
-            uiState = UsageHistoryUiState(
-                isLoading = false,
-                errorMessage = "Failed to load booking history",
-            ),
-            onBack = {},
-        )
-    }
-}
